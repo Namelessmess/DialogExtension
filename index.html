@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>RPG Dialog</title>
+  <style>
+    /* ---------------------------------------
+       |DESIGN-SYSTEM  :  Dark Fantasy / Gold|
+       --------------------------------------- */
+    :root {
+      --gold:        #c8aa6e;
+      --gold-dim:    #8a6f3a;
+      --gold-border: rgba(200,170,110,0.35);
+      --bg-base:     #0f0d0b;
+      --bg-panel:    #17140f;
+      --bg-input:    #1e1a13;
+      --bg-hover:    #26211a;
+      --text:        #ddd6c0;
+      --text-muted:  #7a6e58;
+      --radius:      5px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg-base);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 13px;
+      height: 100%;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-base); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
+
+    /* -- Tabs -- */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--gold-border);
+      background: var(--bg-panel);
+      padding: 0 2px;
+    }
+    .tab-btn {
+      background: none; border: none;
+      color: var(--text-muted);
+      padding: 9px 10px;
+      cursor: pointer;
+      font-size: 0.82em;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid transparent;
+      transition: color 0.18s, border-color 0.18s;
+      flex: 1;
+      text-align: center;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    .tab-content { padding: 10px 10px 12px; }
+
+    /* -- Sections -- */
+    .section {
+      background: var(--bg-panel);
+      border: 1px solid var(--gold-border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 9px;
+    }
+    .section-title {
+      font-size: 0.72em;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gold-border);
+    }
+
+    /* -- Portrait-Preview -- */
+    .portrait-row { display: flex; gap: 10px; align-items: flex-start; }
+    #portrait-preview-container { flex-shrink: 0; }
+    #active-portrait {
+      width: 80px; height: 80px;
+      background: var(--bg-input);
+      border: 1px solid var(--gold-border);
+      border-radius: var(--radius);
+      object-fit: contain;
+      display: block;
+    }
+    #preset-grid { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+    .preset-btn {
+      width: 26px; height: 26px;
+      background: var(--bg-input);
+      border: 1px solid var(--gold-border);
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 0.78em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .preset-btn:hover { background: var(--bg-hover); color: var(--gold); }
+    .preset-btn.active {
+      border-color: var(--gold);
+      background: rgba(200,170,110,0.12);
+      color: var(--gold);
+    }
+    .portrait-info { flex: 1; }
+
+    /* -- Inputs -- */
+    label.field-label {
+      display: block;
+      font-size: 0.75em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+    select, input[type=text], input[type=number], textarea, input[type=url] {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid rgba(200,170,110,0.2);
+      color: var(--text);
+      padding: 5px 8px;
+      border-radius: var(--radius);
+      font-size: 1em;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, input:focus, textarea:focus { border-color: var(--gold-dim); }
+    textarea { resize: vertical; min-height: 64px; }
+    .field { margin-bottom: 7px; }
+
+    /* -- Slider -- */
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--gold);
+      height: 4px;
+      cursor: pointer;
+    }
+    input[type=number] { width: 56px; text-align: center; padding: 4px 4px; }
+
+    /* -- Checkboxen -- */
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 3px 0;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .check-label input[type=checkbox] {
+      width: 14px; height: 14px;
+      accent-color: var(--gold);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* -- Spieler-Checkboxen -- */
+    #player-checkboxes {
+      background: var(--bg-input);
+      border: 1px solid rgba(200,170,110,0.2);
+      border-radius: var(--radius);
+      padding: 6px 8px;
+      max-height: 72px;
+      overflow-y: auto;
+    }
+
+    /* -- Opacity-Grid -- */
+    .opacity-grid { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+    .opacity-btn {
+      flex: 1; min-width: 44px;
+      background: var(--bg-input);
+      border: 1px solid rgba(200,170,110,0.2);
+      color: var(--text-muted);
+      padding: 5px 4px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.8em;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .opacity-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+    .opacity-btn.active {
+      border-color: var(--gold);
+      background: rgba(200,170,110,0.12);
+      color: var(--gold);
+    }
+
+    /* -- Buttons -- */
+    .btn {
+      width: 100%; border: none; padding: 8px 10px;
+      border-radius: var(--radius); cursor: pointer;
+      font-size: 0.9em; font-family: inherit;
+      transition: background 0.18s, opacity 0.18s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #5c1212 0%, #7d1c1c 100%);
+      color: #c8aa6e;          /* Gold-Text statt Weiß */
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      border: 1px solid rgba(200,170,110,0.45);
+      box-shadow: 0 0 10px rgba(160,30,30,0.25);
+    }
+    .btn-primary:hover { opacity: 0.88; box-shadow: 0 0 14px rgba(160,30,30,0.4); }
+    .btn-ghost {
+      background: var(--bg-input);
+      color: var(--text-muted);
+      border: 1px solid rgba(200,170,110,0.2);
+    }
+    .btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
+    .btn-danger {
+      background: rgba(180,40,40,0.15);
+      color: #e57373;
+      border: 1px solid rgba(180,40,40,0.3);
+    }
+    .btn-danger:hover { background: rgba(180,40,40,0.28); }
+
+    /* -- Speech-to-Text -- */
+    .btn-ptt {
+      user-select: none;
+      touch-action: none;
+      font-size: 1em !important;
+    }
+    .btn-ptt.recording,
+    #btn-speech-toggle.recording {
+      background: rgba(229,115,115,0.18) !important;
+      border-color: #e57373 !important;
+      color: #e57373 !important;
+    }
+    #speech-status {
+      font-size: 0.74em;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 4px 0 2px 0;
+      min-height: 18px;
+    }
+    .ptt-hint {
+      font-size: 0.72em;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* -- History -- */
+    #history-log {
+      height: 200px; overflow-y: auto;
+      background: var(--bg-input);
+      border: 1px solid var(--gold-border);
+      border-radius: var(--radius);
+      padding: 10px;
+      font-family: monospace;
+      font-size: 0.82em;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="btn-dialog"   onclick="switchTab('dialog')">Dialog</button>
+    <button class="tab-btn"        id="btn-sprache"  onclick="switchTab('sprache')">Voice</button>
+    <button class="tab-btn"        id="btn-portrait" onclick="switchTab('portrait')">Portrait</button>
+    <button class="tab-btn"        id="btn-setup"    onclick="switchTab('setup')">Setup</button>
+  </div>
+
+  <!-- ══════════════════  TAB: DIALOG  ══════════════════ -->
+  <div id="tab-dialog" class="tab-content">
+
+    <!-- Charakter -->
+    <div class="section">
+      <div class="section-title">Charakter</div>
+      <div class="portrait-row">
+        <div id="portrait-preview-container">
+          <img id="active-portrait" src="" alt="">
+          <div id="preset-grid"></div>
+        </div>
+        <div class="portrait-info">
+          <div class="field">
+            <label class="field-label">Token / Sprecher</label>
+            <select id="token-selector"><option value="selected">Auswahl auf Map</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label">Name (optional überschreiben)</label>
+            <input type="text" id="name-override" placeholder="Standardname...">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bühne -->
+    <div class="section">
+      <div class="section-title">Bühne</div>
+      <div id="stage-list">
+        <span style="color:var(--text-muted);font-size:0.8em;padding:2px 0;display:block">
+          Leer
+        </span>
+      </div>
+      <button class="btn btn-danger" id="btn-clear-stage"
+              style="margin-top:7px;display:none;font-size:0.82em;padding:6px 8px">
+        ✕ Alle Sprecher entfernen
+      </button>
+    </div>
+
+    <!-- Empfänger -->
+    <div class="section">
+      <div class="section-title">Empfänger</div>
+      <div id="player-checkboxes">
+        <label class="check-label">
+          <input type="checkbox" id="target-everyone" checked>
+          <strong>Alle Spieler</strong>
+        </label>
+      </div>
+    </div>
+
+    <!-- Nachricht -->
+    <div class="section">
+      <div class="section-title">Nachricht</div>
+      <div class="field">
+        <textarea id="message-input"
+          placeholder="Tippe eine Nachricht … (Enter = Senden, Shift+Enter = Zeilenumbruch)&#10;Bei Spracheingabe: Vorschau des erkannten Texts"></textarea>
+      </div>
+      <label class="check-label" style="margin-bottom:4px">
+        <input type="checkbox" id="self-view-toggle">
+        Beim Senden anzeigen
+      </label>
+      <label class="check-label">
+        <input type="checkbox" id="clear-log-toggle">
+        Bühne + Verlauf leeren
+      </label>
+    </div>
+
+    <!-- Aktionen -->
+    <button class="btn btn-primary" id="btn-submit">⟶ NACHRICHT SENDEN</button>
+    <button class="btn btn-danger"  id="btn-close-all">✕ Overlay für ALLE schließen</button>
+
+  </div>
+
+  <!-- ══════════════════  TAB: SPRACHE  ══════════════════ -->
+  <div id="tab-sprache" class="tab-content" style="display:none;">
+
+    <div class="section">
+      <div class="section-title">Sprach-Eingabe</div>
+      <p style="font-size:0.76em;color:var(--text-muted);margin:0 0 10px 0;line-height:1.5">
+        Sprich direkt in dein Mikrofon.
+      </p>
+
+      <div class="field">
+        <label class="field-label">Erkennungssprache</label>
+        <select id="speech-lang">
+          <option value="de-DE">🇩🇪 Deutsch</option>
+          <option value="en-US">🇺🇸 English (US)</option>
+          <option value="en-GB">🇬🇧 English (UK)</option>
+          <option value="fr-FR">🇫🇷 Français</option>
+          <option value="es-ES">🇪🇸 Español</option>
+          <option value="ja-JP">🇯🇵 日本語</option>
+        </select>
+      </div>
+
+      <label class="check-label" style="margin-bottom:10px">
+        <input type="checkbox" id="speech-stream" checked>
+        Live-Streaming - zeigt den Text schnellstmöglich - sehr Fehleranfällig
+      </label>
+
+      <!-- Push-to-Talk -->
+      <button class="btn btn-ghost btn-ptt" id="btn-push-to-talk"
+              style="font-size:1.1em;padding:14px 10px;margin-bottom:6px">
+        🎤 Push to Talk
+      </button>
+
+      <!-- Toggle -->
+      <button class="btn btn-ghost" id="btn-speech-toggle"
+              style="margin-bottom:8px">
+        ⭕ Aufnahme ein/aus
+      </button>
+
+      <!-- Status -->
+      <div id="speech-status">Bereit</div>
+
+      <p class="ptt-hint">
+        Leertaste halten = Push-to-Talk
+      </p>
+
+      <!-- Wird nur bei not-allowed eingeblendet -->
+      <div id="speech-permission-hint" style="display:none;margin-top:10px;
+           background:rgba(180,40,40,0.12);border:1px solid rgba(180,40,40,0.3);
+           border-radius:5px;padding:10px;font-size:0.75em;line-height:1.6;color:#ddd6c0">
+        <strong style="color:#e57373">Mikrofon-Zugriff verweigert.</strong><br>
+        Prüfe ob dein Browser unter <em>Einstellungen -> Datenschutz -> Mikrofon</em> den Zugriff blockiert.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">So funktioniert es</div>
+      <div style="font-size:0.78em;color:var(--text-muted);line-height:1.6">
+        <div style="margin-bottom:6px">
+          <span style="color:var(--gold)">🎤 Push to Talk</span> - halten für die Dauer deiner Aussage, loslassen = Senden.
+        </div>
+        <div style="margin-bottom:6px">
+          <span style="color:var(--gold)">⭕ Toggle</span> — einmal drücken zum Starten, nochmal zum Stoppen.
+        </div>
+        <div style="margin-bottom:6px">
+          <span style="color:var(--gold)">Live-Streaming AN</span> — Wörter erscheinen sofort beim Tippen.
+        </div>
+        <div>
+          <span style="color:var(--gold)">Live-Streaming AUS</span> — Text erscheint erst wenn ein Satz fertig erkannt wurde.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════  TAB: PORTRAIT  ══════════════════ -->
+  <div id="tab-portrait" class="tab-content" style="display:none;">
+
+    <!-- Portrait-Einstellungen -->
+    <div class="section">
+      <div class="section-title">Portrait-Einstellungen</div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <label class="field-label" style="margin:0">Position X</label>
+        <div style="display:flex;gap:6px;align-items:center;flex:1;margin-left:10px;">
+          <input type="range"  id="pos-x-slider" min="-100" max="100" value="0"  style="flex:1">
+          <input type="number" id="pos-x-input"  min="-100" max="100" value="0">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <label class="field-label" style="margin:0">Position Y</label>
+        <div style="display:flex;gap:6px;align-items:center;flex:1;margin-left:10px;">
+          <input type="range"  id="pos-y-slider" min="-50" max="300" value="0"   style="flex:1">
+          <input type="number" id="pos-y-input"  min="-50" max="300" value="0">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <label class="field-label" style="margin:0">Größe %</label>
+        <div style="display:flex;gap:6px;align-items:center;flex:1;margin-left:10px;">
+          <input type="range"  id="scale-slider" min="10" max="200" value="100"  style="flex:1">
+          <input type="number" id="scale-input"  min="10" max="200" value="100">
+        </div>
+      </div>
+      <label class="check-label">
+        <input type="checkbox" id="mirror-toggle">
+        Artwork spiegeln
+      </label>
+    </div>
+
+    <!-- Positions-Presets -->
+    <div class="section">
+      <div class="section-title">Positions-Presets</div>
+      <p style="font-size:0.73em;color:var(--text-muted);margin:0 0 8px 0;line-height:1.4">
+        Bis zu 5 Positionen pro Token speichern. <strong style="color:var(--gold)">💾</strong> speichert, Name lädt.
+      </p>
+      <div id="pos-preset-grid" style="display:flex;flex-direction:column;gap:4px">
+        <span style="color:var(--text-muted);font-size:0.8em">Kein Token gewählt</span>
+      </div>
+    </div>
+
+    <!-- Karten-Abdunklung -->
+    <div class="section">
+      <div class="section-title">Karten-Abdunklung</div>
+      <p style="font-size:0.76em;color:var(--text-muted);margin:0 0 7px 0;line-height:1.4">
+        Legt ein gesperrtes Rechteck auf den DRAWING-Layer
+      </p>
+      <div class="opacity-grid" id="opacity-grid">
+        <button class="opacity-btn active" data-val="0">Aus</button>
+        <button class="opacity-btn" data-val="0.2">20 %</button>
+        <button class="opacity-btn" data-val="0.4">40 %</button>
+        <button class="opacity-btn" data-val="0.6">60 %</button>
+        <button class="opacity-btn" data-val="0.8">80 %</button>
+      </div>
+      <input type="hidden" id="overlay-opacity" value="0">
+    </div>
+
+  </div>
+
+  <!-- ══════════════════  TAB: SETUP  ══════════════════ -->
+  <div id="tab-setup" class="tab-content" style="display:none;">
+
+    <!-- Portrait-URLs -->
+    <div class="section">
+      <div class="section-title">Portrait-URLs</div>
+      <div class="field">
+        <label class="field-label">URLs kommagetrennt</label>
+        <textarea id="url-input" style="height:90px;"
+          placeholder="https://example.com/idle.png, https://example.com/talk.png, …"></textarea>
+      </div>
+      <button class="btn btn-ghost" id="save-urls">💾 Am Token speichern</button>
+      <p style="font-size:0.72em;color:var(--text-muted);margin:8px 0 0 0;line-height:1.4">
+        Gespeichert in Token-Metadaten. Numpad 0–9 wechselt das aktive Preset.
+      </p>
+    </div>
+
+    <!-- Verlauf -->
+    <div class="section">
+      <div class="section-title">Gesprächs-Verlauf</div>
+      <div id="history-log"></div>
+      <button class="btn btn-ghost" id="clear-log">Log leeren</button>
+    </div>
+
+  </div>
+
+  <script>
+    document.getElementById('opacity-grid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.opacity-btn');
+      if (!btn) return;
+      document.querySelectorAll('.opacity-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('overlay-opacity').value = btn.dataset.val;
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
