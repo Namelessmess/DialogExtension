@@ -5,7 +5,7 @@
   "action": {
     "title": "DialogExtension",
     "icon": "/icon.svg",
-    "popover": "index.html",
+    "popover": "/DialogExtension/index.html",
     "height": 600,
     "width": 400
   },
