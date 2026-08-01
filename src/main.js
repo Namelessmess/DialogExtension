@@ -507,7 +507,7 @@ async function showGlobalDialog(data) {
     try {
       await OBR.popover.open({
         id:               pid,
-        url:              `/portrait.html?cid=${encodeURIComponent(portrait.characterId)}`,
+        url:              `/DialogExtension/portrait.html?cid=${encodeURIComponent(portrait.characterId)}`,
         width:            Math.max(geom.popW, 80),
         height:           Math.max(geom.popH, 80),
         anchorReference:  "POSITION",
@@ -529,7 +529,7 @@ async function showGlobalDialog(data) {
     try {
       await OBR.popover.open({
         id:               DIALOG_POPOVER_ID,
-        url:              "/display.html",
+        url:              "/DialogExtension/display.html",
         width:            DIALOG_W,
         height:           DIALOG_H,
         anchorReference:  "POSITION",
